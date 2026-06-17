@@ -7,7 +7,7 @@
 // Member_1: 243UC245NP | KENNETH THAM YU JIANG (leader) | KENNETH.THAM.YU@student.mmu.edu.my | 01127561380
 // Member_2: ID | NAME | EMAIL | PHONE
 // Member_3: ID | NAME | EMAIL | PHONE
-// Member_4: ID | NAME | EMAIL | PHONE
+// Member_4: 242UC244PQ | MUHAMMAD SYAZRIN MUHAIMIN BIN ZAIFUL AZRAI | MUHAMMAD.SYAZRIN.MUHAIMIN@student.mmu.edu.my | 0194870904
 // *********************************************************
 // Task Distribution
 // Member_1: Dataset generator
@@ -50,16 +50,50 @@ using namespace std;
 //   3. Do NOT use map, unordered_map, or other library search containers
 //      for the actual hash table logic.
 // ============================================================================
+struct Node {
+    unsigned long long key;
+    string str;
+    Node* next;
+};
+
+static const int TABLE_SIZE = 1000003;
+static Node* table[TABLE_SIZE];
+
+int hashKey(unsigned long long key) {
+    return (int)(key % (unsigned long long)TABLE_SIZE);
+}
+
+Node* chainSearch(unsigned long long key) {
+    int slot = hashKey(key);
+    Node* current = table[slot];
+    while (current != NULL) {
+        if (current->key == key) {
+            return current;
+        }
+        current = current->next;
+    }
+    return NULL;
+}
+
 void buildHashTable(vector<Record> &data) {
 
-    // ----- START PLACEHOLDER (Member 4: delete this line when done) -----
-    cout << "TODO: Implement buildHashTable() in hash_table_search.cpp" << endl;
-    // ----- END PLACEHOLDER -----
-
     // ----- START MEMBER 4 IMPLEMENTATION -----
-    //
-    // Write your hash table build code here.
-    //
+    //Initialize all the bucket to empty
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i] = NULL;
+    }
+
+    //Insert all the record into its bucket
+    for (int i = 0; i < (int)data.size(); i++) {
+        int slot = hashKey(data[i].key);
+
+        //Create a new node and insert at the fromt of the chain
+        Node* newNode = new Node();
+        newNode->key = data[i].key;
+        newNode->str = data[i].str;
+        newNode->next = table[slot];
+        table[slot] = newNode;
+    }
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 
@@ -84,18 +118,73 @@ void runSearchExperiments(vector<Record> &data,
                           double &averageTime,
                           double &worstTime) {
 
-    // ----- START PLACEHOLDER (Member 4: delete this whole block) -----
-    cout << "TODO: Implement runSearchExperiments() in hash_table_search.cpp" << endl;
-
-    bestTime = 0.0;
-    averageTime = 0.0;
-    worstTime = 0.0;
-    // ----- END PLACEHOLDER -----
-
     // ----- START MEMBER 4 IMPLEMENTATION -----
-    //
-    // Write your n-search timing experiment code here.
-    //
+    int n = (int)data.size();
+
+    vector<int> bucketSize(TABLE_SIZE, 0);
+    for (int i = 0; i < n; i++) {
+        bucketSize[hashKey(data[i].key)]++;
+    }
+
+    //Best case
+    vector<unsigned long long> bestKeys;
+    for (int i = 0; i < n && (int)bestKeys.size() < n; i++) {
+        if (bucketSize[hashKey(data[i].key)] == 1) 
+            bestKeys.push_back(data[i].key);
+    
+    }
+
+    //Fill up to n if not enough size -1 buckets
+    for (int i = 0; i < n && (int)bestKeys.size() < n; i++)
+        bestKeys.push_back(data[i].key);
+
+    //Average case
+    vector<unsigned long long> avgKeys;
+    for (int i = 0; i < n; i++) 
+        avgKeys.push_back(data[i].key);
+    
+
+    //Worst case
+    int worstSlot = 0;
+    for (int i = 1; i < TABLE_SIZE; i++)
+        if (bucketSize[i] > bucketSize[worstSlot]) 
+            worstSlot = i;
+
+    vector<unsigned long long> worstBucketKeys;
+    for (int i = 0; i < n; i++)
+        if (hashKey(data[i].key) == worstSlot)
+            worstBucketKeys.push_back(data[i].key);
+    if (worstBucketKeys.empty())
+        worstBucketKeys = avgKeys;
+
+    //Repeat worst bucket keya until we have n searches
+    vector<unsigned long long> worstKeys;
+    for (int i = 0; (int)worstKeys.size() < n; i++)
+        worstKeys.push_back(worstBucketKeys[i % (int)worstBucketKeys.size()]);
+
+    //Time best case (n searches)
+    volatile int dummy = 0;
+    auto t1 = chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; i++) 
+        dummy += (chainSearch(bestKeys[i]) != NULL) ? 1 : 0;
+    auto t2 = chrono::high_resolution_clock::now();
+    bestTime = chrono::duration<double>(t2 - t1).count();
+
+    //Time average case (n searches)
+    auto t3 = chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; i++)
+        dummy += (chainSearch(avgKeys[i]) != NULL) ? 1 : 0;
+    auto t4 = chrono::high_resolution_clock::now();
+    averageTime = chrono::duration<double>(t4 - t3).count();
+
+    //Time worst case (n searches)
+    auto t5 = chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; i++)
+        dummy += (chainSearch(worstKeys[i]) != NULL) ? 1 : 0;
+    auto t6 = chrono::high_resolution_clock::now();
+    worstTime = chrono::duration<double>(t6 - t5).count();
+
+    if (dummy == 0) { cout << ""; }
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 

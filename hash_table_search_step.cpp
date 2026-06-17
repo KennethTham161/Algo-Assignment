@@ -7,7 +7,7 @@
 // Member_1: 243UC245NP | KENNETH THAM YU JIANG (leader) | KENNETH.THAM.YU@student.mmu.edu.my | 01127561380
 // Member_2: ID | NAME | EMAIL | PHONE
 // Member_3: ID | NAME | EMAIL | PHONE
-// Member_4: ID | NAME | EMAIL | PHONE
+// Member_4: 242UC244PQ | MUHAMMAD SYAZRIN MUHAIMIN BIN ZAIFUL AZRAI | muhammad.syazrin.muhaimin@student.mmu.edu.my | 0194870904
 // *********************************************************
 // Task Distribution
 // Member_1: Dataset generator
@@ -54,16 +54,36 @@ using namespace std;
 // Tip: if you need global/table variables, declare them in this section
 //      (above buildHashTable) so searchTargetStep() can use them too.
 // ============================================================================
+
+struct Node {
+    unsigned long long key;
+    string str;
+    Node* next;
+};
+
+static const int TABLE_SIZE = 1000003;
+static Node* table[TABLE_SIZE];
+
+int hashKey(unsigned long long key) {
+    return (int)(key % (unsigned long long)TABLE_SIZE);
+}
+
 void buildHashTable(vector<Record> &data) {
 
-    // ----- START PLACEHOLDER (Member 4: delete this line when done) -----
-    cout << "TODO: Implement buildHashTable() in hash_table_search_step.cpp" << endl;
-    // ----- END PLACEHOLDER -----
-
     // ----- START MEMBER 4 IMPLEMENTATION -----
-    //
-    // Write your hash table build code here.
-    //
+    for (int i = 0; i < TABLE_SIZE; i++) {
+        table[i] = NULL;
+    }
+
+    for (int i = 0; i < (int)data.size(); i++) {
+        int slot = hashKey(data[i].key);
+
+        Node* newNode = new Node();
+        newNode->key = data[i].key;
+        newNode->str = data[i].str;
+        newNode->next = table[slot];
+        table[slot] = newNode;
+    }
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 
@@ -80,15 +100,17 @@ void buildHashTable(vector<Record> &data) {
 // ============================================================================
 string searchTargetStep(unsigned long long target) {
 
-    // ----- START PLACEHOLDER (Member 4: delete this whole block) -----
-    cout << "TODO: Implement searchTargetStep() in hash_table_search_step.cpp" << endl;
-    return "-1 != " + to_string(target);
-    // ----- END PLACEHOLDER -----
-
     // ----- START MEMBER 4 IMPLEMENTATION -----
-    //
-    // Write your single-target search code here.
-    //
+    int slot = hashKey(target);
+
+    Node* current = table[slot];
+    while (current != NULL) {
+        if (current->key == target) {
+            return to_string(target) + " = " + to_string(current->key) + "/" + current->str;
+        }
+        current = current->next;
+    }
+    return "-1 != " + to_string(target);
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 

@@ -6,7 +6,7 @@
 // Trimester: 2610
 // Member_1: 243UC245NP | KENNETH THAM YU JIANG (leader) | KENNETH.THAM.YU@student.mmu.edu.my | 01127561380
 // Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | NAME | EMAIL | PHONE
+// Member_3: 243UC247BV | MUHAMMAD ILHAM RAHMANI BIN ADAM SHARONI | MUHAMMAD.ILHAM.RAHMANI@student.mmu.edu.my | 0132293782
 // Member_4: ID | NAME | EMAIL | PHONE
 // *********************************************************
 // Task Distribution
@@ -57,20 +57,80 @@ using namespace std;
 // ============================================================================
 void heapSortStep(vector<Record> &data, vector<string> &stepLines) {
 
-    // ----- START PLACEHOLDER (Member 3: delete this whole block) -----
-    cout << "TODO: Implement heapSortStep() in heap_sort_step.cpp" << endl;
-
     int n = (int)data.size();
-    for (int i = n; i >= 1; i--) {
+
+    for (int i = n / 2 - 1; i >= 0; i--)
+    {
+        int largest = i;
+
+        while (true)
+        {
+            int left = 2 * largest + 1;
+            int right = 2 * largest + 2;
+            int parent = largest;
+
+            if (left < n &&data[left].key > data[parent].key)
+            {
+                parent = left;
+            }
+
+            if (right < n &&data[right].key > data[parent].key)
+            {
+                parent = right;
+            }
+
+            if (parent == largest)
+            {
+                break;
+            }
+
+            Record temp = data[largest];
+            data[largest] = data[parent];
+            data[parent] = temp;
+
+            largest = parent;
+        }
+    }
+
+    stepLines[0] = formatArray(data) + " initial";
+
+    for (int i = n - 1; i > 0; i--)
+    {
+        Record temp = data[0];
+        data[0] = data[i];
+        data[i] = temp;
+
+        int largest = 0;
+
+        while(true)
+        {
+            int left = 2 * largest + 1;
+            int right = 2 * largest + 2;
+            int parent = largest;
+
+            if (left < i &&data[left].key > data[parent].key)
+            {
+                parent = left;
+            }
+
+            if (right < i &&data[right].key > data[parent].key)
+            {
+                parent = right;
+            }
+
+            if (parent == largest)
+            {
+                break;
+            }
+
+            Record temp2 = data[largest];
+            data[largest] = data[parent];
+            data[parent] = temp2;
+
+            largest = parent;
+        }
         stepLines.push_back(formatArray(data) + " i = " + to_string(i));
     }
-    // ----- END PLACEHOLDER -----
-
-    // ----- START MEMBER 3 IMPLEMENTATION -----
-    //
-    // Write your heap sort step code here.
-    //
-    // ----- END MEMBER 3 IMPLEMENTATION -----
 }
 
 // ============================================================================

@@ -6,7 +6,7 @@
 // Trimester: 2610
 // Member_1: 243UC245NP | KENNETH THAM YU JIANG (leader) | KENNETH.THAM.YU@student.mmu.edu.my | 01127561380
 // Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | NAME | EMAIL | PHONE
+// Member_3: 243UC247BV | MUHAMMAD ILHAM RAHMANI BIN ADAM SHARONI | MUHAMMAD.ILHAM.RAHMANI@student.mmu.edu.my | 0132297382
 // Member_4: ID | NAME | EMAIL | PHONE
 // *********************************************************
 // Task Distribution
@@ -52,15 +52,81 @@ using namespace std;
 // ============================================================================
 void heapSort(vector<Record> &data) {
 
-    // ----- START PLACEHOLDER (Member 3: delete this line when done) -----
-    cout << "TODO: Implement heapSort() in heap_sort.cpp" << endl;
-    // ----- END PLACEHOLDER -----
+    int n = data.size();
 
-    // ----- START MEMBER 3 IMPLEMENTATION -----
-    //
-    // Write your full heap sort code here.
-    //
-    // ----- END MEMBER 3 IMPLEMENTATION -----
+    for (int i = n / 2 -1; i>=0; i--)
+    {
+        int largest = i;
+
+        while (true)
+        {
+            int left = 2 * largest + 1;
+            int right = 2 * largest + 2;
+            int parent = largest;
+
+            if (left < n && data[left].key > data[parent].key)
+            {
+                parent = left;
+            }
+
+            if (right < n && data[right].key > data[parent].key)
+            {
+                parent = right;
+            }
+            if (parent == largest)
+            {
+                break;
+            }
+
+            Record temp = data[largest];
+            data[largest] = data[parent];
+            data[parent] = temp;
+
+            largest = parent;
+        }
+    }
+
+    for (int i = n - 1; i > 0; i--)
+    {
+        Record temp = data[0];
+        data[0] = data[i];
+        data[i] = temp;
+
+        int largest = 0;
+
+        while (true)
+        {
+            int left = 2 * largest + 1;
+            int right = 2 * largest + 2;
+            int parent = largest;
+
+            if (left < i && data[left].key > data[parent].key)
+            {
+                parent = left;
+            }
+
+            if (right < i &&data[right].key > data[parent].key)
+            {
+                parent = right;
+            }
+
+            if (right < i && data[right].key > data[parent].key)
+            {
+                parent = right;
+            }
+
+            if (parent == largest)
+            {
+                break;
+            }
+
+            Record temp2 = data[largest];
+            data[largest] = data[parent];
+            data[parent] = temp2;
+
+            largest = parent;
+        }
+    }
 }
 
 // ============================================================================

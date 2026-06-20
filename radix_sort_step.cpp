@@ -1,41 +1,9 @@
-// *********************************************************
-// Program: radix_sort_step.cpp
-// Course: CCP6214 Algorithm Design and Analysis
-// Lecture Class: TC4L
-// Tutorial Class: T13L
-// Trimester: 2610
-// Member_1: 243UC245NP | KENNETH THAM YU JIANG (leader) | KENNETH.THAM.YU@student.mmu.edu.my | 01127561380
-// Member_2: ID | NAME | EMAIL | PHONE
-// Member_3: ID | NAME | EMAIL | PHONE
-// Member_4: ID | NAME | EMAIL | PHONE
-// *********************************************************
-// Task Distribution
-// Member_1: Dataset generator
-// Member_2: Radix sort programs (implement radixSortStep below)
-// Member_3: Heap sort programs
-// Member_4: Hash table search programs
-// *********************************************************
-//
-// FILE GUIDE
-// [SCAFFOLD]  = already done by group leader. You can read it, but do not change it
-//               unless you really need to fix a bug.
-// [MEMBER 2]  = YOUR WORK. Write your radix sort step-by-step code here.
-//
-// What Member 2 must implement:
-//   - radixSortStep()
-//   - Remove the PLACEHOLDER loop inside that function when done
-//
-// What is already done for you:
-//   - CSV reading, output file writing, step line formatting
-//   - getDigit() helper
-//   - main() program flow
-//
-// Shared helpers live in common.h (readCsv, writeCsv, formatArray, etc.)
-
 #include "common.h"
 
 #include <fstream>
 #include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
@@ -69,19 +37,39 @@ int getDigit(unsigned long long key, int d) {
 //   6. Delete the PLACEHOLDER section below when your real code works.
 // ============================================================================
 void radixSortStep(vector<Record> &data, vector<string> &stepLines) {
+    if (data.empty()) return;
 
-    // ----- START PLACEHOLDER (Member 2: delete this whole block) -----
-    cout << "TODO: Implement radixSortStep() in radix_sort_step.cpp" << endl;
-
-    for (int d = 10; d >= 1; d--) {
-        stepLines.push_back(formatArray(data) + " d=" + to_string(d));
-    }
-    // ----- END PLACEHOLDER -----
+    size_t n = data.size();
+    vector<Record> output(n);
 
     // ----- START MEMBER 2 IMPLEMENTATION -----
-    //
-    // Write your radix sort code here.
-    //
+
+    for (int d = 10; d >= 1; d--) {
+        int count[10] = {0};
+
+
+        for (size_t i = 0; i < n; i++) {
+            int digit = getDigit(data[i].key, d);
+            count[digit]++;
+        }
+
+        for (int i = 1; i < 10; i++) {
+            count[i] += count[i - 1];
+        }
+
+        for (long long i = n - 1; i >= 0; i--) {
+            int digit = getDigit(data[i].key, d);
+            output[count[digit] - 1] = data[i];
+            count[digit]--;
+        }
+
+        for (size_t i = 0; i < n; i++) {
+            data[i] = output[i];
+        }
+
+
+        stepLines.push_back(formatArray(data) + " d=" + to_string(d));
+    }
     // ----- END MEMBER 2 IMPLEMENTATION -----
 }
 
@@ -92,10 +80,6 @@ void radixSortStep(vector<Record> &data, vector<string> &stepLines) {
 // ============================================================================
 int main() {
     // ----- [SCAFFOLD] Input settings (tutor may change these during demo) -----
-    // string inputFile = "dataset_1000.csv";
-    // long startRow = 1;
-    // long endRow = 7;
-
     string inputFile = "dataset_1000.csv";
     long startRow = 1;
     long endRow = 7;

@@ -53,14 +53,37 @@ using namespace std;
 // ============================================================================
 void radixSort(vector<Record> &data) {
 
-    // ----- START PLACEHOLDER (Member 2: delete this line when done) -----
-    cout << "TODO: Implement radixSort() in radix_sort.cpp" << endl;
-    // ----- END PLACEHOLDER -----
-
     // ----- START MEMBER 2 IMPLEMENTATION -----
-    //
-    // Write your full radix sort code here.
-    //
+    if (data.empty()) return;
+
+    size_t n = data.size();
+    vector<Record> output(n);
+    long long exp = 1;
+
+    for (int d = 1; d <= 10; d++) {
+        int count[10] = {0};
+
+        for (size_t i = 0; i < n; i++) {
+            int digit = (data[i].key / exp) % 10;
+            count[digit]++;
+        }
+
+        for (int i = 1; i < 10; i++) {
+            count[i] += count[i - 1];
+        }
+
+        for (long long i = n - 1; i >= 0; i--) {
+            int digit = (data[i].key / exp) % 10;
+            output[count[digit] - 1] = data[i];
+            count[digit]--;
+        }
+
+        for (size_t i = 0; i < n; i++) {
+            data[i] = output[i];
+        }
+
+        exp *= 10;
+    }
     // ----- END MEMBER 2 IMPLEMENTATION -----
 }
 
@@ -73,7 +96,7 @@ int main() {
     // ----- [SCAFFOLD] Input settings (tutor may change these during demo) -----
     // string inputFile = "dataset_1000000.csv";
 
-    string inputFile = "dataset_1000000.csv";
+    string inputFile = "dataset_1000.csv";
     // ----- end input settings -----
 
     vector<Record> data = readCsv(inputFile);

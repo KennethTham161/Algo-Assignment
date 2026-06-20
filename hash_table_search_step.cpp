@@ -93,24 +93,29 @@ void buildHashTable(vector<Record> &data) {
 //
 // Your job:
 //   1. Search for one target integer key in your hash table.
-//   2. Return the result as one string line:
-//        Found:     "2008864030 = 2008864030/rdiea"
-//        Not found: "-1 != 123456789"
-//   3. Delete the PLACEHOLDER return below when your real code works.
+//   2. Return the search path as multiple lines:
+//        Non-match: "<node.key> != <target>"
+//        Found:     "<target> = <node.key>/<node.str>"
+//        Not found: "-1 != <target>"
 // ============================================================================
-string searchTargetStep(unsigned long long target) {
+vector<string> searchTargetStep(unsigned long long target) {
 
     // ----- START MEMBER 4 IMPLEMENTATION -----
+    vector<string> pathLines;
     int slot = hashKey(target);
 
     Node* current = table[slot];
     while (current != NULL) {
         if (current->key == target) {
-            return to_string(target) + " = " + to_string(current->key) + "/" + current->str;
+            pathLines.push_back(to_string(target) + " = " +
+                               to_string(current->key) + "/" + current->str);
+            return pathLines;
         }
+        pathLines.push_back(to_string(current->key) + " != " + to_string(target));
         current = current->next;
     }
-    return "-1 != " + to_string(target);
+    pathLines.push_back("-1 != " + to_string(target));
+    return pathLines;
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 
@@ -126,7 +131,8 @@ int main() {
     // unsigned long long target = 123456789;  // example: not-found target
 
     string inputFile = "dataset_1000.csv";
-    unsigned long long target = 123456789;
+    //unsigned long long target = 1970365386;   // example: found target
+    unsigned long long target = 123456789;  // example: not-found target
     // ----- end input settings -----
 
     vector<Record> data = readCsv(inputFile);
@@ -137,7 +143,7 @@ int main() {
     }
 
     buildHashTable(data);
-    string resultLine = searchTargetStep(target);
+    vector<string> pathLines = searchTargetStep(target);
 
     long datasetSize = getDatasetSizeFromFilename(inputFile);
     if (datasetSize < 0) {
@@ -153,10 +159,14 @@ int main() {
         return 1;
     }
 
-    out << resultLine << endl;
+    for (int i = 0; i < (int)pathLines.size(); i++) {
+        out << pathLines[i] << endl;
+    }
     out.close();
 
     cout << "Search step output written to: " << outputFile << endl;
-    cout << resultLine << endl;
+    for (int i = 0; i < (int)pathLines.size(); i++) {
+        cout << pathLines[i] << endl;
+    }
     return 0;
 }

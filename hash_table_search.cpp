@@ -50,50 +50,49 @@ using namespace std;
 //   3. Do NOT use map, unordered_map, or other library search containers
 //      for the actual hash table logic.
 // ============================================================================
-struct Node {
-    unsigned long long key;
-    string str;
-    Node* next;
-};
 
-static const int TABLE_SIZE = 1000003;
-static Node* table[TABLE_SIZE];
+vector<vector<Record>> hashTable;
+int tableSize = 0;
 
-int hashKey(unsigned long long key) {
-    return (int)(key % (unsigned long long)TABLE_SIZE);
+// Simple division method hash function: key % tableSize
+int hashFunction(unsigned long long key) {
+    return (int)(key % (unsigned long long)tableSize);
 }
 
-Node* chainSearch(unsigned long long key) {
-    int slot = hashKey(key);
-    Node* current = table[slot];
-    while (current != NULL) {
-        if (current->key == key) {
-            return current;
+// Walks down the chain in the target bucket, one by one, return true if found
+bool hashSearch(unsigned long long target, int &comparisons) {
+    int index = hashFunction(target);
+    vector<Record> &bucket = hashTable[index];
+
+    comparisons = 0;
+    for (int i = 0; i <(int)bucket.size(); i++) {
+        comparisons++;
+        if (bucket[i].key == target) {
+            return true;
         }
-        current = current->next;
     }
-    return NULL;
+    return false;
 }
 
 void buildHashTable(vector<Record> &data) {
 
     // ----- START MEMBER 4 IMPLEMENTATION -----
     //Initialize all the bucket to empty
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        table[i] = NULL;
+    //Table size = number of records
+    tableSize = (int)data.size();
+    if (tableSize < 1) {
+        tableSize = 1;
     }
 
-    //Insert all the record into its bucket
+    hashTable.clear();
+    hashTable.resize(tableSize);
+
+    //Insert every recor into its bucket
     for (int i = 0; i < (int)data.size(); i++) {
-        int slot = hashKey(data[i].key);
-
-        //Create a new node and insert at the fromt of the chain
-        Node* newNode = new Node();
-        newNode->key = data[i].key;
-        newNode->str = data[i].str;
-        newNode->next = table[slot];
-        table[slot] = newNode;
+        int index = hashFunction(data[i].key);
+        hashTable[index].push_back(data[i]);
     }
+
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 
@@ -121,70 +120,70 @@ void runSearchExperiments(vector<Record> &data,
     // ----- START MEMBER 4 IMPLEMENTATION -----
     int n = (int)data.size();
 
-    vector<int> bucketSize(TABLE_SIZE, 0);
+    //Find Best Case key
+    unsigned long long bestKey = data[0].key;
+    for (int i = 0; i < tableSize; i++) {
+        if (hashTable[i].size() == 1) {
+            bestKey = hashTable[i][0].key;
+            break;
+        }
+    }
+
+    //Find Average Case keys
+    unsigned long long averageKey = data[n / 2].key;
+    for (int i = 0; i < tableSize; i++) {
+        if (hashTable[i].size() == 2) {
+            averageKey = hashTable[i][1].key;
+            break;
+        }
+    }
+
+    //Find Worst Case key
+    int longestIndex = 0;
+    int longestSize = 0;
+    for (int i = 0; i < tableSize; i++) {
+        if ((int)hashTable[i].size() > longestSize) {
+            longestSize = (int)hashTable[i].size();
+            longestIndex = i;
+        }
+    }
+    unsigned long long worstKey = data[n - 1].key;
+    if (longestSize > 0) {
+        worstKey = hashTable[longestIndex][longestSize - 1].key;
+    }
+
+    //Suggested cases:
+    int comparisons = 0;
+    long totalComparisons = 0;
+
+    //Best Case
+    auto startBest = chrono::high_resolution_clock::now();
     for (int i = 0; i < n; i++) {
-        bucketSize[hashKey(data[i].key)]++;
+        hashSearch(bestKey, comparisons);
+        totalComparisons += comparisons;
     }
+    auto endBest = chrono::high_resolution_clock::now();
+    bestTime = chrono::duration<double>(endBest - startBest).count();
 
-    //Best case
-    vector<unsigned long long> bestKeys;
-    for (int i = 0; i < n && (int)bestKeys.size() < n; i++) {
-        if (bucketSize[hashKey(data[i].key)] == 1) 
-            bestKeys.push_back(data[i].key);
-    
+    //Average Case
+    auto startAverage = chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; i++) {
+        hashSearch(averageKey, comparisons);
+        totalComparisons += comparisons;
     }
+    auto endAverage = chrono::high_resolution_clock::now();
+    averageTime = chrono::duration<double>(endAverage - startAverage).count();
 
-    //Fill up to n if not enough size -1 buckets
-    for (int i = 0; i < n && (int)bestKeys.size() < n; i++)
-        bestKeys.push_back(data[i].key);
+    //Worst Case
+    auto startWorst = chrono::high_resolution_clock::now();
+    for (int i = 0; i < n; i++) {
+        hashSearch(worstKey, comparisons);
+        totalComparisons += comparisons;
+    }
+    auto endWorst = chrono::high_resolution_clock::now();
+    worstTime = chrono::duration<double>(endWorst - startWorst).count();
 
-    //Average case
-    vector<unsigned long long> avgKeys;
-    for (int i = 0; i < n; i++) 
-        avgKeys.push_back(data[i].key);
-    
-
-    //Worst case
-    int worstSlot = 0;
-    for (int i = 1; i < TABLE_SIZE; i++)
-        if (bucketSize[i] > bucketSize[worstSlot]) 
-            worstSlot = i;
-
-    vector<unsigned long long> worstBucketKeys;
-    for (int i = 0; i < n; i++)
-        if (hashKey(data[i].key) == worstSlot)
-            worstBucketKeys.push_back(data[i].key);
-    if (worstBucketKeys.empty())
-        worstBucketKeys = avgKeys;
-
-    //Repeat worst bucket keya until we have n searches
-    vector<unsigned long long> worstKeys;
-    for (int i = 0; (int)worstKeys.size() < n; i++)
-        worstKeys.push_back(worstBucketKeys[i % (int)worstBucketKeys.size()]);
-
-    //Time best case (n searches)
-    volatile int dummy = 0;
-    auto t1 = chrono::high_resolution_clock::now();
-    for (int i = 0; i < n; i++) 
-        dummy += (chainSearch(bestKeys[i]) != NULL) ? 1 : 0;
-    auto t2 = chrono::high_resolution_clock::now();
-    bestTime = chrono::duration<double>(t2 - t1).count();
-
-    //Time average case (n searches)
-    auto t3 = chrono::high_resolution_clock::now();
-    for (int i = 0; i < n; i++)
-        dummy += (chainSearch(avgKeys[i]) != NULL) ? 1 : 0;
-    auto t4 = chrono::high_resolution_clock::now();
-    averageTime = chrono::duration<double>(t4 - t3).count();
-
-    //Time worst case (n searches)
-    auto t5 = chrono::high_resolution_clock::now();
-    for (int i = 0; i < n; i++)
-        dummy += (chainSearch(worstKeys[i]) != NULL) ? 1 : 0;
-    auto t6 = chrono::high_resolution_clock::now();
-    worstTime = chrono::duration<double>(t6 - t5).count();
-
-    if (dummy == 0) { cout << ""; }
+    cout << "(sanity check) Total comparisons: " << totalComparisons << endl;
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
 

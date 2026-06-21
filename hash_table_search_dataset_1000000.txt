@@ -1,0 +1,4 @@
+Best case time: 0.016983 seconds
+Average case time: 0.0181708 seconds
+Worst case time: 0.0339098 seconds
+Total experiment time: 0.0719898 seconds

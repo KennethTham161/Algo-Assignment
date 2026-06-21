@@ -55,34 +55,28 @@ using namespace std;
 //      (above buildHashTable) so searchTargetStep() can use them too.
 // ============================================================================
 
-struct Node {
-    unsigned long long key;
-    string str;
-    Node* next;
-};
+vector<vector<Record>> hashTable;
+int tableSize = 0;
 
-static const int TABLE_SIZE = 1000003;
-static Node* table[TABLE_SIZE];
-
-int hashKey(unsigned long long key) {
-    return (int)(key % (unsigned long long)TABLE_SIZE);
+// Simple division method hash function: key % tableSize
+int hashFunction(unsigned long long key) {
+    return (int)(key % (unsigned long long)tableSize);
 }
 
 void buildHashTable(vector<Record> &data) {
 
     // ----- START MEMBER 4 IMPLEMENTATION -----
-    for (int i = 0; i < TABLE_SIZE; i++) {
-        table[i] = NULL;
+    tableSize = (int)data.size();
+    if (tableSize < 1) {
+        tableSize = 1;
     }
 
-    for (int i = 0; i < (int)data.size(); i++) {
-        int slot = hashKey(data[i].key);
+    hashTable.clear();
+    hashTable.resize(tableSize);
 
-        Node* newNode = new Node();
-        newNode->key = data[i].key;
-        newNode->str = data[i].str;
-        newNode->next = table[slot];
-        table[slot] = newNode;
+    for (int i = 0; i < (int)data.size(); i++) {
+        int index = hashFunction(data[i].key);
+        hashTable[index].push_back(data[i]);
     }
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
@@ -102,19 +96,28 @@ vector<string> searchTargetStep(unsigned long long target) {
 
     // ----- START MEMBER 4 IMPLEMENTATION -----
     vector<string> pathLines;
-    int slot = hashKey(target);
 
-    Node* current = table[slot];
-    while (current != NULL) {
-        if (current->key == target) {
-            pathLines.push_back(to_string(target) + " = " +
-                               to_string(current->key) + "/" + current->str);
-            return pathLines;
+    int index = hashFunction(target);
+    vector<Record> &bucket = hashTable[index];
+
+    bool found = false;
+
+    // Walk down the chain in the target bucket, one by one
+    for (int i = 0; i < (int)bucket.size(); i++) {
+        if (bucket[i].key == target) {
+            found = true;
+            pathLines.push_back(to_string(target) + " = " + formatRecord(bucket[i]));
+            break;
+        } else {
+            //record not match line
+            pathLines.push_back(to_string(bucket[i].key) + " != " + to_string(target));
         }
-        pathLines.push_back(to_string(current->key) + " != " + to_string(target));
-        current = current->next;
     }
-    pathLines.push_back("-1 != " + to_string(target));
+
+    if (!found) {
+        pathLines.push_back("-1 != " + to_string(target));
+    }
+
     return pathLines;
     // ----- END MEMBER 4 IMPLEMENTATION -----
 }
